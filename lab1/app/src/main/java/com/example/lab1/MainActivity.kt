@@ -266,12 +266,12 @@ fun ColorDisplayBox(label: String, rgb: Rgb) {
         Box(
             modifier = Modifier
                 .size(100.dp)
-                .background(rgbToComposeColor(rgb))  // Используем rgbToComposeColor для конвертации
+                .background(rgbToComposeColor(rgb))
         )
     }
 }
 
-// Ползунки для изменения цвета
+
 @Composable
 fun ColorSliders(label: String, value: Int, min: Int, max: Int, onValueChange: (Int) -> Unit) {
     Column {
@@ -285,7 +285,7 @@ fun ColorSliders(label: String, value: Int, min: Int, max: Int, onValueChange: (
     }
 }
 
-// Конвертация структуры Rgb в androidx.compose.ui.graphics.Color
+
 fun rgbToComposeColor(rgb: Rgb): Color {
     return Color(rgb.r, rgb.g, rgb.b)
 }
