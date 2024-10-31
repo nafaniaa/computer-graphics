@@ -31,8 +31,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.lab1.colorConversion.cmykToRgb
 import com.example.lab1.colorConversion.hsvToRgb
 import com.example.lab1.colorConversion.rgbToCmyk
@@ -99,35 +101,47 @@ fun ColorPickerApp() {
             .verticalScroll(rememberScrollState())
     ) {
         // Слайдеры и поля для RGB
-        Text(text = "RGB")
+        Text(
+            text = "RGB",
+            fontWeight = FontWeight.Bold,
+            fontSize = 26.sp
+        )
         ColorSliders("Red", red, 0, 255, onValueChange = {
             red = it
             updateFromRgb()
         })
-        InputField("R", red, { red = it; updateFromRgb() })
+        InputField("R", red, { red = it ?: 0; updateFromRgb() })
 
         ColorSliders("Green", green, 0, 255, onValueChange = {
             green = it
             updateFromRgb()
         })
-        InputField("G", green, { green = it; updateFromRgb() })
+        InputField("G", green, { if (it != null) {
+            green = it
+        }; updateFromRgb() })
 
         ColorSliders("Blue", blue, 0, 255, onValueChange = {
             blue = it
             updateFromRgb()
         })
-        InputField("B", blue, { blue = it; updateFromRgb() })
+        InputField("B", blue, { if (it != null) {
+            blue = it
+        }; updateFromRgb() })
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Слайдеры и поля для CMYK
-        Text(text = "CMYK")
+        Text(
+            text = "CMYK",
+            fontWeight = FontWeight.Bold,
+            fontSize = 26.sp
+        )
         ColorSliders("Cyan", (cmyk.c * 100).toInt(), 0, 100, onValueChange = {
             cmyk = cmyk.copy(c = it.toDouble() / 100)
             updateFromCmyk()
         })
         InputField("C", (cmyk.c * 100).toInt(), {
-            cmyk = cmyk.copy(c = it.toDouble() / 100)
+            cmyk = cmyk.copy(c = it!!.toDouble() / 100)
             updateFromCmyk()
         })
 
@@ -136,7 +150,7 @@ fun ColorPickerApp() {
             updateFromCmyk()
         })
         InputField("M", (cmyk.m * 100).toInt(), {
-            cmyk = cmyk.copy(m = it.toDouble() / 100)
+            cmyk = cmyk.copy(m = it!!.toDouble() / 100)
             updateFromCmyk()
         })
 
@@ -145,7 +159,7 @@ fun ColorPickerApp() {
             updateFromCmyk()
         })
         InputField("Y", (cmyk.y * 100).toInt(), {
-            cmyk = cmyk.copy(y = it.toDouble() / 100)
+            cmyk = cmyk.copy(y = it!!.toDouble() / 100)
             updateFromCmyk()
         })
 
@@ -154,20 +168,24 @@ fun ColorPickerApp() {
             updateFromCmyk()
         })
         InputField("K", (cmyk.k * 100).toInt(), {
-            cmyk = cmyk.copy(k = it.toDouble() / 100)
+            cmyk = cmyk.copy(k = it!!.toDouble() / 100)
             updateFromCmyk()
         })
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Слайдеры и поля для HSV
-        Text(text = "HSV")
+        Text(
+            text = "HSV",
+            fontWeight = FontWeight.Bold,
+            fontSize = 26.sp
+        )
         ColorSliders("Hue", hsv.h.toInt(), 0, 360, onValueChange = {
             hsv = hsv.copy(h = it.toDouble())
             updateFromHsv()
         })
         InputField("H", hsv.h.toInt(), {
-            hsv = hsv.copy(h = it.toDouble())
+            hsv = hsv.copy(h = it!!.toDouble())
             updateFromHsv()
         })
 
@@ -176,7 +194,7 @@ fun ColorPickerApp() {
             updateFromHsv()
         })
         InputField("S", (hsv.s * 100).toInt(), {
-            hsv = hsv.copy(s = it.toDouble() / 100)
+            hsv = hsv.copy(s = it!!.toDouble() / 100)
             updateFromHsv()
         })
 
@@ -185,7 +203,7 @@ fun ColorPickerApp() {
             updateFromHsv()
         })
         InputField("V", (hsv.v * 100).toInt(), {
-            hsv = hsv.copy(v = it.toDouble() / 100)
+            hsv = hsv.copy(v = it!!.toDouble() / 100)
             updateFromHsv()
         })
 
@@ -217,23 +235,30 @@ fun ColorPickerApp() {
 
 
 @Composable
-fun InputField(label: String, value: Int, onValueChange: (Int) -> Unit) {
+fun InputField(label: String, value: Int?, onValueChange: (Int?) -> Unit) {
+    var textValue by remember { mutableStateOf(value?.toString() ?: "0") }
+    var isPlaceholderVisible by remember { mutableStateOf(value == null || value == 0) }
+
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(text = "$label:")
         Spacer(modifier = Modifier.width(8.dp))
+
         TextField(
-            value = value.toString(),
-            onValueChange = {
-                val intValue = it.toIntOrNull()
-                if (intValue != null) {
-                    onValueChange(intValue)
-                }
+            value = if (isPlaceholderVisible) "" else textValue,
+            placeholder = { Text(text = "0") },
+            onValueChange = { input ->
+                val sanitizedInput = if (isPlaceholderVisible) input else input
+                val intValue = sanitizedInput.toIntOrNull()
+
+                onValueChange(intValue)
+
+                textValue = sanitizedInput
+                isPlaceholderVisible = sanitizedInput.isEmpty()
             },
             modifier = Modifier.width(80.dp)
         )
     }
 }
-// Box для отображения цвета
 @Composable
 fun ColorDisplayBox(label: String, rgb: Rgb) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
